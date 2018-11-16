@@ -18,55 +18,116 @@ string readLine(string file, uint16_t line) {
   for (uint16_t i = 0; i < line; i++) {
     getline(flux, data);
   }
+  for (uint16_t i = 0; i < data.size(); i++) {
+    if (data[i] == ' ') {
+      cout << "test" << endl;
+    }
+  }
   flux.close();
   return (data);
 }
 
-string readData(string file, uint16_t line) {
+void readDataLineDouble(string file, uint16_t line, uint16_t startPosition,
+                        uint16_t column, double data[]) {
   ifstream flux(file, ios::in);
-  string data;
-  uint16_t endOfLine = 0;
-  char tmpRead;
-  char tmpNumber[3] = {'0', '0', '0'};
-  uint8_t tmpNumberPosition = 2;
-  uint8_t dataPosition = 0;
-
-  while (endOfLine < line) {
-    flux.get(tmpRead);
-    if (tmpRead == '\n') {
-      endOfLine++;
-      dataPosition++;
-      data[dataPosition] = tmpNumber[0] + tmpNumber[1] + tmpNumber[2];
-      tmpNumberPosition = 2;
-      tmpNumber[0] = 0;
-      tmpNumber[1] = 0;
-      tmpNumber[2] = 0;
-    } else if (tmpRead == 'P') {
-      flux.get(tmpRead);
+  string tmpData;
+  string tmpData2;
+  uint16_t dataM = startPosition;
+  bool lastWasSpace = false;
+  for (uint16_t i = 0; i < line; i++) {
+    getline(flux, tmpData);
+  }
+  for (uint16_t i = 0; i < tmpData.size(); i++) {
+    if (tmpData[i] == ' ') {
+      if (lastWasSpace == false) {
+        data[dataM] = stod(tmpData2);
+        tmpData2.clear();
+        dataM++;
+        lastWasSpace = true;
+      }
+    } else if (tmpData[i] == '\n') {
+      data[dataM] = stod(tmpData2);
+      lastWasSpace = true;
+      // BREAK
     } else {
-      tmpNumber[tmpNumberPosition] = tmpRead;
+      lastWasSpace = false;
+      tmpData2 = tmpData2 + tmpData[i];
     }
   }
-  cout << data[1] << endl;
   flux.close();
-  return (data);
+}
+
+void readDataLineInt(string file, uint16_t line, uint16_t startPosition,
+                     uint16_t column, unsigned int data[][3]) {
+  ifstream flux(file, ios::in);
+  string tmpData;
+  string tmpData2;
+  uint16_t lastPosition = 0;
+  uint16_t dataM = startPosition;
+  uint16_t dataN = 0;
+  bool lastWasSpace = false;
+
+  for (uint16_t i = 0; i < line; i++) {
+    getline(flux, tmpData);
+  }
+  for (uint16_t i = 0; i < tmpData.size(); i++) {
+    if (tmpData[i] == ' ') {
+      if (dataN < column) {
+        if (lastWasSpace == false) {
+          data[dataM][dataN] = (unsigned int)stoi(tmpData2);
+          tmpData2.clear();
+          dataN++;
+          lastWasSpace = true;
+        }
+      } else
+
+      {
+        if (lastWasSpace == false) {
+          data[dataM][dataN] = (unsigned int)stoi(tmpData2);
+          tmpData2.clear();
+          dataN = 0;
+          dataM++;
+          lastWasSpace = true;
+        }
+      }
+    } else if (tmpData[i] == '\n') {
+      data[dataM][dataN] = (unsigned int)stoi(tmpData2);
+      // BREAK
+    } else {
+      lastWasSpace = false;
+      tmpData2 = tmpData2 + tmpData[i];
+    }
+  }
+
+  flux.close();
 }
 
 int main() {
 
-  string file = "tests/elementary/E01.txt";
+  string file = "tests/elementary/E02.txt";
 
-  unsigned int colors_number = (unsigned int)stoi(readLine(file, 1));
-  unsigned int colors_used[colors_number][(unsigned int)2];
-  double colors_threshold[colors_number];
+  unsigned int nbR = (unsigned int)stoi(readLine(file, 1));
+  if (nbR < 2) {
+    error_nbR(nbR);
+  }
+  cout << "nbR " << +nbR << endl;
+  unsigned int colors_used[nbR + 1][(unsigned int)3];
+  cout << "colors_used ";
   for (int i = 0; i < 3; i++) {
     colors_used[0][i] = 0;
   }
-  for (int i = 0; i < colors_number; i++) {
+  readDataLineInt(file, 2, 1, nbR, colors_used);
+  for (int i = 0; i < nbR + 1; i++) {
+    for (int j = 0; j < 3; j++) {
+      cout << colors_used[i][j] << " ";
+    }
+    cout << "   ";
   }
-  colors_threshold[0] = 0;
-  colors_threshold[colors_number] = 1;
 
+  double colors_threshold[nbR + 1];
+  colors_threshold[0] = 0;
+  colors_threshold[nbR] = 1;
+  readDataLineDouble(file, 3, 1, nbR, colors_threshold);
   return 0;
 }
 
