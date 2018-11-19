@@ -19,11 +19,6 @@ string readLine(string file, uint16_t line) {
   for (uint16_t i = 0; i < line; i++) {
     getline(flux, data);
   }
-  for (uint16_t i = 0; i < data.size(); i++) {
-    if (data[i] == ' ') {
-      cout << "test" << endl;
-    }
-  }
   flux.close();
   return (data);
 }
@@ -103,7 +98,7 @@ void readDataLineInt(string file, uint16_t line, uint16_t startPosition,
   flux.close();
 }
 
-uint8_t thresholding(string file, double colors_threshold[], uint8_t nbR) {
+int* thresholding(string file, double colors_threshold[], uint8_t nbR) {
   cout << "Parsing" << endl;
   ifstream flux(file, ios::in);
 
@@ -142,7 +137,9 @@ uint8_t thresholding(string file, double colors_threshold[], uint8_t nbR) {
 
   getline(flux, data);
 
-  double seuil[size[1]][size[0]];
+  double tmpDouble = 0;
+  int thresholded[size[1]][size[0]];
+
   for (uint16_t i = 0; i < size[1]; i++) {
 
     uint8_t x = 0;
@@ -165,19 +162,18 @@ uint8_t thresholding(string file, double colors_threshold[], uint8_t nbR) {
       R = arrayTmp[3 * j];
       G = arrayTmp[3 * j + 1];
       B = arrayTmp[3 * j + 2];
-      seuil[i][j] = sqrt(R * R + G * G + B * B) / (sqrt(3) * max);
+      tmpDouble = sqrt(R * R + G * G + B * B) / (sqrt(3) * max);
       for (int k = 0; k < nbR; k++) {
-        if (seuil[i][j] >= colors_threshold[k] &&
-            seuil[i][j] <= colors_threshold[k + 1]) {
-          seuil[i][j] = k + 1;
+        if (tmpDouble >= colors_threshold[k] && tmpDouble <= colors_threshold[k + 1]) {
+          thresholded[i][j] = k + 1;
           k = nbR;
         }
       }
     }
     getline(flux, data);
   }
-
   cout << "Parsing done" << endl;
+  return (thresholded);
 }
 
 int main() {
@@ -206,8 +202,7 @@ int main() {
   colors_threshold[0] = 0;
   colors_threshold[nbR] = 1;
   readDataLineDouble(file, 3, 1, nbR, colors_threshold);
-
-  uint8_t pixels = thresholding(file, colors_threshold, nbR);
+  int* pixels = thresholding(file, colors_threshold, nbR);
 
   return 0;
 }
