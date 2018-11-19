@@ -3,6 +3,7 @@
  */
 #include <fstream>
 #include <iostream>
+#include <math.h>
 #include <string>
 
 using namespace std;
@@ -102,9 +103,79 @@ void readDataLineInt(string file, uint16_t line, uint16_t startPosition,
   flux.close();
 }
 
+uint8_t parse(string file) {
+  cout << "Parsing" << endl;
+  ifstream flux(file, ios::in);
+
+  string data = {};
+  string dataTmp = {};
+  uint16_t size[2];
+
+  do {
+    getline(flux, data);
+  } while (data != "P3");
+
+  getline(flux, data);
+  uint8_t j = 0;
+  data += ' ';
+  bool lastWasSpace = false;
+  for (uint8_t i = 0; i < data.size(); i++) {
+    if ((data[i] != ' ') && (data[i] != '\n')) {
+      dataTmp += data[i];
+      lastWasSpace = false;
+    } else if (lastWasSpace) {
+    } else {
+      size[j] = stoi(dataTmp);
+      lastWasSpace = true;
+      dataTmp = {};
+      j++;
+    }
+  }
+
+  getline(flux, data);
+  int max = stoi(data);
+  int R = 0;
+  int G = 0;
+  int B = 0;
+
+  int arrayTmp[size[0] * 3] = {};
+
+  getline(flux, data);
+
+  double seuil[size[1]][size[0]];
+  for (uint16_t i = 0; i < size[1]; i++) {
+
+    uint8_t x = 0;
+    data += ' ';
+    bool lastWasSpace = false;
+    for (uint8_t k = 0; k < data.size(); k++) {
+      if ((data[k] != ' ') && (data[k] != '\n')) {
+        dataTmp += data[k];
+        lastWasSpace = false;
+      } else if (lastWasSpace) {
+      } else {
+        arrayTmp[x] = stoi(dataTmp);
+        lastWasSpace = true;
+        dataTmp = {};
+        x++;
+      }
+    }
+
+    for (int j = 0; j < size[1]; j++) {
+      R = arrayTmp[3 * j];
+      G = arrayTmp[3 * j + 1];
+      B = arrayTmp[3 * j + 2];
+      seuil[i][j] = sqrt(R * R + G * G + B * B) / (sqrt(3) * max);
+    }
+    getline(flux, data);
+  }
+
+  cout << "Parsing done" << endl;
+}
+
 int main() {
 
-  string file = "tests/elementary/E02.txt";
+  string file = "tests/elementary/test1.txt";
 
   unsigned int nbR = (unsigned int)stoi(readLine(file, 1));
   if (nbR < 2) {
@@ -128,6 +199,14 @@ int main() {
   colors_threshold[0] = 0;
   colors_threshold[nbR] = 1;
   readDataLineDouble(file, 3, 1, nbR, colors_threshold);
+
+  uint16_t size[2] = {1, 1};
+  // readDataLineInt(size);
+
+  // uint8_t pixels[size[0]][size[1]][3];
+
+  uint8_t pixels = parse(file);
+
   return 0;
 }
 
