@@ -103,7 +103,7 @@ void readDataLineInt(string file, uint16_t line, uint16_t startPosition,
   flux.close();
 }
 
-uint8_t parse(string file) {
+uint8_t thresholding(string file, double colors_threshold[], uint8_t nbR) {
   cout << "Parsing" << endl;
   ifstream flux(file, ios::in);
 
@@ -166,6 +166,13 @@ uint8_t parse(string file) {
       G = arrayTmp[3 * j + 1];
       B = arrayTmp[3 * j + 2];
       seuil[i][j] = sqrt(R * R + G * G + B * B) / (sqrt(3) * max);
+      for (int k = 0; k < nbR; k++) {
+        if (seuil[i][j] >= colors_threshold[k] &&
+            seuil[i][j] <= colors_threshold[k + 1]) {
+          seuil[i][j] = k + 1;
+          k = nbR;
+        }
+      }
     }
     getline(flux, data);
   }
@@ -200,12 +207,7 @@ int main() {
   colors_threshold[nbR] = 1;
   readDataLineDouble(file, 3, 1, nbR, colors_threshold);
 
-  uint16_t size[2] = {1, 1};
-  // readDataLineInt(size);
-
-  // uint8_t pixels[size[0]][size[1]][3];
-
-  uint8_t pixels = parse(file);
+  uint8_t pixels = thresholding(file, colors_threshold, nbR);
 
   return 0;
 }
