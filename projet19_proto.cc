@@ -98,7 +98,7 @@ void readDataLineInt(string file, uint16_t line, uint16_t startPosition,
   flux.close();
 }
 
-int* thresholding(string file, double colors_threshold[], uint8_t nbR) {
+int **thresholding(string file, double colors_threshold[], uint8_t nbR) {
   cout << "Parsing" << endl;
   ifstream flux(file, ios::in);
 
@@ -138,7 +138,10 @@ int* thresholding(string file, double colors_threshold[], uint8_t nbR) {
   getline(flux, data);
 
   double tmpDouble = 0;
-  int thresholded[size[1]][size[0]];
+  int **thresholded = new int*[size[1]];
+  for(int i = 0; i< size[1]; i++){
+    thresholded[i]=new int[size[0]];
+  }
 
   for (uint16_t i = 0; i < size[1]; i++) {
 
@@ -202,7 +205,14 @@ int main() {
   colors_threshold[0] = 0;
   colors_threshold[nbR] = 1;
   readDataLineDouble(file, 3, 1, nbR, colors_threshold);
-  int* pixels = thresholding(file, colors_threshold, nbR);
+  int **thresholded = thresholding(file, colors_threshold, nbR);
+
+  for (int i = 0; i < 2; i++) {
+    for (int j = 0; j < 3; j++) {
+      cout << thresholded[i][j] << " ";
+    }
+    cout << endl;
+  }
 
   return 0;
 }
