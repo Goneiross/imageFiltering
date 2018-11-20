@@ -13,6 +13,8 @@ void error_color(int id);
 void error_threshold(double invalid_val);
 void error_nb_filter(int nb_filter);
 
+// FAIRE LES PROTOTYPES
+
 string readLine(string file, uint16_t line) {
     ifstream flux(file, ios::in);
     string data;
@@ -186,22 +188,28 @@ int** thresholding(void* size, string file, double colors_threshold[], uint8_t n
 void rec_filtering(uint16_t xSize, uint16_t ySize, uint16_t xPos, uint16_t yPos,
                    void* picture) {
     int(*p_picture)[xSize][ySize] = (int(*)[xSize][ySize])picture;
-
     int color[3][3] = {};
+    // cout << xSize << ySize << xPos << yPos << endl;
     uint8_t sameColor = 0;
     bool isSameColor = false;
     int testColor = -1;
     if (xPos == 0 || xPos == xSize) {
+        // cout << "nothing" << endl;
     } else if (yPos == 0 || yPos == ySize) {
+        // cout << "nothing" << endl;
     } else {
         for (int i = -1; i <= 1; i++) {
-            for (int j = -1; j <= 1; j++) { // VIRER LA COULEUR DU MILIEU
-                rec_filtering(xSize, ySize, xPos + i, yPos + j, *p_picture);
+            for (int j = -1; j <= 1; j++) {
+                if (i == xPos && j == yPos) {
 
-                if (testColor == color[i + 1][j + 1]) {
-                    sameColor++;
                 } else {
-                    testColor = color[i + 1][j + 1];
+                    rec_filtering(xSize, ySize, xPos + i, yPos + j, *p_picture);
+
+                    if (testColor == color[i + 1][j + 1]) {
+                        sameColor++;
+                    } else {
+                        testColor = color[i + 1][j + 1];
+                    }
                 }
             }
         }
@@ -215,7 +223,7 @@ void rec_filtering(uint16_t xSize, uint16_t ySize, uint16_t xPos, uint16_t yPos,
 
 int main() {
 
-    string file = "tests/elementary/test2.txt";
+    string file = "tests/advanced/tree.txt";
     // Nombre Couleurs reduites
     unsigned int nbR = (unsigned int)stoi(readLine(file, 1));
     if (nbR < 2) {
@@ -243,17 +251,20 @@ int main() {
     // Seuillage de l'image
     int size[2] = {};
     int** thresholded = thresholding(size, file, colors_threshold, nbR);
-    cout << endl << "Size " << size[0] << " " << size[1] << endl << endl;
-    for (int i = 0; i < size[1]; i++) {
+    cout << endl
+         << "Size " << size[0] << " " << size[1] << " " << size[2] << endl
+         << endl;
+    for (int i = 0; i < size[2]; i++) {
         for (int j = 0; j < size[0]; j++) {
             cout << thresholded[i][j] << " ";
         }
         cout << endl;
     }
-    // Filtrage
-    rec_filtering(size[0], size[1], size[0] / 2, size[1] / 2, thresholded);
     cout << endl;
-    for (int i = 0; i < size[1]; i++) {
+    // Filtrage
+    rec_filtering(size[0], size[2], 0, 0, thresholded);
+    cout << endl;
+    for (int i = 0; i < size[2]; i++) {
         for (int j = 0; j < size[0]; j++) {
             cout << thresholded[i][j] << " ";
         }
