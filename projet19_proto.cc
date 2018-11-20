@@ -108,6 +108,7 @@ int** thresholding(void* size, string file, double colors_threshold[], uint8_t n
     do {
         getline(flux, data);
     } while (data != "P3");
+
     getline(flux, data);
     uint8_t j = 0;
     data += ' ';
@@ -243,8 +244,8 @@ int main() {
     int size[2] = {};
     int** thresholded = thresholding(size, file, colors_threshold, nbR);
     cout << endl << "Size " << size[0] << " " << size[1] << endl << endl;
-    for (int i = 0; i < 2; i++) {
-        for (int j = 0; j < 3; j++) {
+    for (int i = 0; i < size[1]; i++) {
+        for (int j = 0; j < size[0]; j++) {
             cout << thresholded[i][j] << " ";
         }
         cout << endl;
@@ -252,8 +253,8 @@ int main() {
     // Filtrage
     rec_filtering(size[0], size[1], size[0] / 2, size[1] / 2, thresholded);
     cout << endl;
-    for (int i = 0; i < 2; i++) {
-        for (int j = 0; j < 3; j++) {
+    for (int i = 0; i < size[1]; i++) {
+        for (int j = 0; j < size[0]; j++) {
             cout << thresholded[i][j] << " ";
         }
         cout << endl;
