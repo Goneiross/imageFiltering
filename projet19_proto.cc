@@ -67,13 +67,10 @@ void readDataLineInt(string file, uint16_t line, uint16_t startPosition,
         getline(flux, tmpData);
     }
     tmpData += ' ';
-    cout << endl << "tmp data " << tmpData << endl << endl;
     for (uint16_t i = 0; i < tmpData.size(); i++) {
         if (tmpData[i] == ' ') {
             if (dataN < column - 1) {
                 if (lastWasSpace == false) {
-                    cout << "test1 " << stoi(tmpData2) << " " << dataM << " " << dataN
-                         << " " << (unsigned int)stoi(tmpData2) << endl;
                     data[dataM][dataN] = (unsigned int)stoi(tmpData2);
                     tmpData2.clear();
                     dataN++;
@@ -83,8 +80,6 @@ void readDataLineInt(string file, uint16_t line, uint16_t startPosition,
 
             {
                 if (lastWasSpace == false) {
-                    cout << "test2 " << stoi(tmpData2) << " " << dataM << " " << dataN
-                         << " " << (unsigned int)stoi(tmpData2) << endl;
                     data[dataM][dataN] = (unsigned int)stoi(tmpData2);
                     tmpData2.clear();
                     dataN = 0;
@@ -94,11 +89,9 @@ void readDataLineInt(string file, uint16_t line, uint16_t startPosition,
             }
         } else if (tmpData[i] == '\n') {
             data[dataM][dataN] = (unsigned int)stoi(tmpData2);
-            // BREAK
         } else {
             lastWasSpace = false;
             tmpData2 = tmpData2 + tmpData[i];
-            // cout <<  tmpData2 << endl << endl;
         }
     }
 
@@ -184,24 +177,32 @@ int** thresholding(string file, double colors_threshold[], uint8_t nbR) {
 }
 
 void rec_filtering(uint16_t xSize, uint16_t ySize, uint16_t xPos, uint16_t yPos,
-                   picture[][]) { // fctn recursive
-    int color[3][3] = {};
-    bool sameColor = false;
-    uint8_t testColor;
-    if (xPos == 0 || xPos == xSize) {        // si au bord pour x
-    } else if (yPos == 0 || yPos == ySize) { // si au bord pour y
-    } else {                                 // si pas au bord
-        for (int i = -1; i <= 1; i++) {      // Pour un carre autour du point
-            for (int j = -1; j <= 1; j++) {  // VIRER LA COULEUR DU MILIEU
-                color[i + 1][j + 1] = rec_filtering(xSize, ySize, xPos + i, yPos + y,
-                                                    picture)[xPos + i][yPos + j];
+                   void* picture) {
+    int(*p_picture)[xSize][ySize] = (int(*)[xSize][ySize])picture;
 
-                testColor = color[i + 1][j + 1];
+    int color[3][3] = {};
+    uint8_t sameColor = 0;
+    bool isSameColor = false;
+    int testColor = -1;
+    if (xPos == 0 || xPos == xSize) {
+    } else if (yPos == 0 || yPos == ySize) {
+    } else {
+        for (int i = -1; i <= 1; i++) {
+            for (int j = -1; j <= 1; j++) { // VIRER LA COULEUR DU MILIEU
+                rec_filtering(xSize, ySize, xPos + i, yPos + j, *p_picture);
+
+                if (testColor == color[i + 1][j + 1]) {
+                    sameColor++;
+                } else {
+                    testColor = color[i + 1][j + 1];
+                }
             }
         }
-        if (sameColor) {
+        if (sameColor == 7) {
+            *p_picture[xPos][yPos] = color[0][0];
+        } else {
+            *p_picture[xPos][yPos] = 0;
         }
-        rec_filtering(xSize, ySize);
     }
 }
 
