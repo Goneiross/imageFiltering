@@ -66,10 +66,14 @@ void readDataLineInt(string file, uint16_t line, uint16_t startPosition,
   for (uint16_t i = 0; i < line; i++) {
     getline(flux, tmpData);
   }
+  tmpData += ' ';
+  cout << endl << "tmp data " << tmpData << endl << endl;
   for (uint16_t i = 0; i < tmpData.size(); i++) {
     if (tmpData[i] == ' ') {
-      if (dataN < column) {
+      if (dataN < column - 1) {
         if (lastWasSpace == false) {
+          cout << "test1 " << stoi(tmpData2) << " " << dataM << " " << dataN << " "
+               << (unsigned int)stoi(tmpData2) << endl;
           data[dataM][dataN] = (unsigned int)stoi(tmpData2);
           tmpData2.clear();
           dataN++;
@@ -79,6 +83,8 @@ void readDataLineInt(string file, uint16_t line, uint16_t startPosition,
 
       {
         if (lastWasSpace == false) {
+          cout << "test2 " << stoi(tmpData2) << " " << dataM << " " << dataN << " "
+               << (unsigned int)stoi(tmpData2) << endl;
           data[dataM][dataN] = (unsigned int)stoi(tmpData2);
           tmpData2.clear();
           dataN = 0;
@@ -92,14 +98,14 @@ void readDataLineInt(string file, uint16_t line, uint16_t startPosition,
     } else {
       lastWasSpace = false;
       tmpData2 = tmpData2 + tmpData[i];
+      // cout <<  tmpData2 << endl << endl;
     }
   }
 
   flux.close();
 }
 
-int **thresholding(string file, double colors_threshold[], uint8_t nbR) {
-  cout << "Parsing" << endl;
+int** thresholding(string file, double colors_threshold[], uint8_t nbR) {
   ifstream flux(file, ios::in);
 
   string data = {};
@@ -138,9 +144,9 @@ int **thresholding(string file, double colors_threshold[], uint8_t nbR) {
   getline(flux, data);
 
   double tmpDouble = 0;
-  int **thresholded = new int*[size[1]];
-  for(int i = 0; i< size[1]; i++){
-    thresholded[i]=new int[size[0]];
+  int** thresholded = new int*[size[1]];
+  for (int i = 0; i < size[1]; i++) {
+    thresholded[i] = new int[size[0]];
   }
 
   for (uint16_t i = 0; i < size[1]; i++) {
@@ -175,7 +181,6 @@ int **thresholding(string file, double colors_threshold[], uint8_t nbR) {
     }
     getline(flux, data);
   }
-  cout << "Parsing done" << endl;
   return (thresholded);
 }
 
@@ -187,25 +192,25 @@ int main() {
   if (nbR < 2) {
     error_nbR(nbR);
   }
-  cout << "nbR " << +nbR << endl;
+  cout << "nbR " << nbR << endl;
   unsigned int colors_used[nbR + 1][(unsigned int)3];
-  cout << "colors_used ";
+  cout << "colors_used" << endl;
   for (int i = 0; i < 3; i++) {
     colors_used[0][i] = 0;
   }
-  readDataLineInt(file, 2, 1, nbR, colors_used);
+  readDataLineInt(file, 2, 1, 3, colors_used);
   for (int i = 0; i < nbR + 1; i++) {
     for (int j = 0; j < 3; j++) {
       cout << colors_used[i][j] << " ";
     }
-    cout << "   ";
+    cout << endl;
   }
 
   double colors_threshold[nbR + 1];
   colors_threshold[0] = 0;
   colors_threshold[nbR] = 1;
   readDataLineDouble(file, 3, 1, nbR, colors_threshold);
-  int **thresholded = thresholding(file, colors_threshold, nbR);
+  int** thresholded = thresholding(file, colors_threshold, nbR);
 
   for (int i = 0; i < 2; i++) {
     for (int j = 0; j < 3; j++) {
