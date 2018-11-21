@@ -13,7 +13,7 @@ void error_color(int id);
 void error_threshold(double invalid_val);
 void error_nb_filter(int nb_filter);
 
-// FAIRE LES PROTOTYPES
+// FAIRE LES PROTO
 
 string readLine(string file, uint16_t line) {
     ifstream flux(file, ios::in);
@@ -145,14 +145,15 @@ int** thresholding(void* size, string file, double colors_threshold[], uint8_t n
         data += ' ';
         dataTmp = "";
         bool lastWasSpace = false;
-        cout << data << endl;
+        // cout << data << endl;
         int beginTMP = 0;
         while (data[beginTMP] == ' ') { // ATTENTION SI " " EN 1ER !!! RAJOUTER PARTOUT
             beginTMP++;
         }
         for (uint8_t k = beginTMP; k < data.size(); k++) {
-            cout << "dataTmp " << dataTmp[0] << " " << dataTmp[1] << " " << dataTmp[2]
-                 << endl;
+            // cout << "dataTmp " << dataTmp[0] << " " << dataTmp[1] << " " <<
+            // dataTmp[2]
+            //<< endl;
 
             if ((data[k] != ' ') && (data[k] != '\n')) {
                 dataTmp += data[k];
@@ -160,7 +161,7 @@ int** thresholding(void* size, string file, double colors_threshold[], uint8_t n
             } else if (lastWasSpace) {
             } else {
                 arrayTmp[x] = stoi(dataTmp);
-                cout << "arrayTmp" << arrayTmp[x] << endl;
+                // cout << "arrayTmp" << arrayTmp[x] << endl;
                 lastWasSpace = true;
                 dataTmp = {};
                 x++;
@@ -182,6 +183,7 @@ int** thresholding(void* size, string file, double colors_threshold[], uint8_t n
         getline(flux, data);
     }
     cout << endl << "Size in Thr function " << *p_size[0] << " " << *p_size[1] << endl;
+    flux.close();
     return (thresholded);
 }
 
@@ -221,9 +223,28 @@ void rec_filtering(uint16_t xSize, uint16_t ySize, uint16_t xPos, uint16_t yPos,
     }
 }
 
+void writeData(string file, int max, uint16_t xSize, uint16_t ySize, void* picture) {
+    int(*p_picture)[xSize][ySize] = (int(*)[xSize][ySize])picture;
+    ofstream flux(file, ios::out | ios::trunc);
+
+    flux << "P3" << endl;
+    flux << xSize << " " << ySize << endl;
+    flux << max << endl;
+    for (int i = 0; i < ySize; i++) {
+        for (int j = 0; j < xSize; j++) {
+            if (j == xSize - 1) {
+                flux << *p_picture[i][j] << endl;
+            } else {
+                flux << *p_picture[i][j] << " ";
+            }
+        }
+    }
+    flux.close();
+}
+
 int main() {
 
-    string file = "tests/advanced/tree.txt";
+    string file = "tests/elementary/test2.txt";
     // Nombre Couleurs reduites
     unsigned int nbR = (unsigned int)stoi(readLine(file, 1));
     if (nbR < 2) {
@@ -254,23 +275,32 @@ int main() {
     cout << endl
          << "Size " << size[0] << " " << size[1] << " " << size[2] << endl
          << endl;
-    for (int i = 0; i < size[2]; i++) {
-        for (int j = 0; j < size[0]; j++) {
-            cout << thresholded[i][j] << " ";
-        }
-        cout << endl;
-    }
+    /*
+for (int i = 0; i < size[2]; i++) {
+   for (int j = 0; j < size[0]; j++) {
+       cout << thresholded[i][j] << " ";
+   }
+   cout << endl;
+}
+*/
     cout << endl;
     // Filtrage
     rec_filtering(size[0], size[2], 0, 0, thresholded);
     cout << endl;
-    for (int i = 0; i < size[2]; i++) {
-        for (int j = 0; j < size[0]; j++) {
-            cout << thresholded[i][j] << " ";
-        }
-        cout << endl;
-    }
+
+    /*
+        for (int i = 0; i < size[2]; i++) {
+            for (int j = 0; j < size[0]; j++) {
+                cout << thresholded[i][j] << " ";
+            }
+
+    cout << endl;
+}
+*/
     // Renvoie de l'image
+
+    writeData("testWrite.txt", 255, size[0], size[2], thresholded);
+    cout << "done" << endl;
 
     return 0;
 }
