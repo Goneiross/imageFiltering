@@ -230,12 +230,15 @@ void writeData(string file, int max, uint16_t xSize, uint16_t ySize, void* pictu
     flux << "P3" << endl;
     flux << xSize << " " << ySize << endl;
     flux << max << endl;
+    cout << endl;
     for (int i = 0; i < ySize; i++) {
         for (int j = 0; j < xSize; j++) {
             if (j == xSize - 1) {
                 flux << *p_picture[i][j] << endl;
+                cout << i << "," << j << "," << *p_picture[i][j] << endl;
             } else {
                 flux << *p_picture[i][j] << " ";
+                cout << i << "," << j << "," << *p_picture[i][j] << "         ";
             }
         }
     }
@@ -275,31 +278,30 @@ int main() {
     cout << endl
          << "Size " << size[0] << " " << size[1] << " " << size[2] << endl
          << endl;
-    /*
-for (int i = 0; i < size[2]; i++) {
-   for (int j = 0; j < size[0]; j++) {
-       cout << thresholded[i][j] << " ";
-   }
-   cout << endl;
-}
-*/
+
+    for (int i = 0; i < size[2]; i++) {
+        for (int j = 0; j < size[0]; j++) {
+            cout << thresholded[i][j] << " ";
+        }
+        cout << endl;
+    }
+
     cout << endl;
     // Filtrage
     rec_filtering(size[0], size[2], 0, 0, thresholded);
     cout << endl;
 
-    /*
-        for (int i = 0; i < size[2]; i++) {
-            for (int j = 0; j < size[0]; j++) {
-                cout << thresholded[i][j] << " ";
-            }
+    for (int i = 0; i < size[2]; i++) {
+        for (int j = 0; j < size[0]; j++) {
+            cout << i << "," << j << "," << thresholded[i][j] << "         ";
+        }
 
-    cout << endl;
-}
-*/
+        cout << endl;
+    }
+
     // Renvoie de l'image
 
-    writeData("testWrite.txt", 255, size[0], size[2], thresholded);
+    writeData("testWrite.ppm", 255, size[0], size[2], thresholded);
     cout << "done" << endl;
 
     return 0;
