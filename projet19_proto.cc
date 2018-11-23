@@ -192,7 +192,6 @@ void thresholding(int* size, string file, double colors_threshold[], uint8_t nbR
         }
         getline(flux, data);
     }
-    cout << endl << "Size in Thr function " << size[0] << " " << size[1] << endl;
     flux.close();
 }
 
@@ -239,6 +238,7 @@ void writeData(string file, int max, uint16_t xSize, uint16_t ySize, int** pictu
     flux << xSize << " " << ySize << endl;
     flux << max << endl;
     cout << endl;
+
     for (int i = 0; i < ySize; i++) {
         for (int j = 0; j < xSize; j++) {
             if (j == xSize - 1) {
@@ -295,7 +295,7 @@ int main() {
         }
         cout << endl;
     }
-    writeData("testWrite.ppm", 255, size[0], size[2], picture);
+    writeData("testWrite.ppm", 255, size[0], size[1], picture);
     cout << "done" << endl;
 
     return (0);
