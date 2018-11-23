@@ -100,13 +100,11 @@ void readDataLineInt(string file, uint16_t line, uint16_t startPosition,
     flux.close();
 }
 
-int** thresholding(void* size, string file, double colors_threshold[], uint8_t nbR) {
+void getSize(string file, int* size) {
     ifstream flux(file, ios::in);
 
-    int(*p_size)[2] = (int(*)[2])size;
     string data = {};
     string dataTmp = {};
-
     do {
         getline(flux, data);
     } while (data != "P3");
@@ -121,26 +119,38 @@ int** thresholding(void* size, string file, double colors_threshold[], uint8_t n
             lastWasSpace = false;
         } else if (lastWasSpace) {
         } else {
-            *p_size[j] = stoi(dataTmp);
+            size[j] = stoi(dataTmp);
             lastWasSpace = true;
             dataTmp = {};
             j++;
         }
     }
+    flux.close();
+}
+
+void thresholding(int* size, string file, double colors_threshold[], uint8_t nbR,
+                  int** thresholded) {
+    ifstream flux(file, ios::in);
+
+    string data = {};
+    string dataTmp = {};
+
+    do {
+        getline(flux, data);
+    } while (data != "P3");
+
+    getline(flux, data);
+
     getline(flux, data);
     int max = stoi(data);
     int R = 0, G = 0, B = 0;
 
-    int arrayTmp[*p_size[0] * 3] = {};
+    int arrayTmp[size[0] * 3] = {};
     getline(flux, data);
 
     double tmpDouble = 0;
-    int** thresholded = new int*[*p_size[1]];
-    for (int i = 0; i < *p_size[1]; i++) {
-        thresholded[i] = new int[*p_size[0]];
-    }
 
-    for (uint16_t i = 0; i < *p_size[1]; i++) {
+    for (uint16_t i = 0; i < size[1]; i++) {
         uint8_t x = 0;
         data += ' ';
         dataTmp = "";
@@ -167,7 +177,7 @@ int** thresholding(void* size, string file, double colors_threshold[], uint8_t n
                 x++;
             }
         }
-        for (int j = 0; j < *p_size[1]; j++) {
+        for (int j = 0; j < size[1]; j++) {
             R = arrayTmp[3 * j];
             G = arrayTmp[3 * j + 1];
             B = arrayTmp[3 * j + 2];
@@ -182,9 +192,8 @@ int** thresholding(void* size, string file, double colors_threshold[], uint8_t n
         }
         getline(flux, data);
     }
-    cout << endl << "Size in Thr function " << *p_size[0] << " " << *p_size[1] << endl;
+    cout << endl << "Size in Thr function " << size[0] << " " << size[1] << endl;
     flux.close();
-    return (thresholded);
 }
 
 void rec_filtering(uint16_t xSize, uint16_t ySize, uint16_t xPos, uint16_t yPos,
@@ -223,8 +232,7 @@ void rec_filtering(uint16_t xSize, uint16_t ySize, uint16_t xPos, uint16_t yPos,
     }
 }
 
-void writeData(string file, int max, uint16_t xSize, uint16_t ySize, void* picture) {
-    int(*p_picture)[xSize][ySize] = (int(*)[xSize][ySize])picture;
+void writeData(string file, int max, uint16_t xSize, uint16_t ySize, int** picture) {
     ofstream flux(file, ios::out | ios::trunc);
 
     flux << "P3" << endl;
@@ -234,11 +242,11 @@ void writeData(string file, int max, uint16_t xSize, uint16_t ySize, void* pictu
     for (int i = 0; i < ySize; i++) {
         for (int j = 0; j < xSize; j++) {
             if (j == xSize - 1) {
-                flux << *p_picture[i][j] << endl;
-                cout << i << "," << j << "," << *p_picture[i][j] << endl;
+                flux << picture[i][j] << endl;
+                cout << picture[i][j] << endl;
             } else {
-                flux << *p_picture[i][j] << " ";
-                cout << i << "," << j << "," << *p_picture[i][j] << "         ";
+                flux << picture[i][j] << " ";
+                cout << picture[i][j] << "     ";
             }
         }
     }
@@ -253,58 +261,44 @@ int main() {
     if (nbR < 2) {
         error_nbR(nbR);
     }
-    cout << "nbR " << nbR << endl;
     // Couleurs reduites utilisees
     unsigned int colors_used[nbR + 1][(unsigned int)3];
-    cout << "colors_used" << endl;
-    for (int i = 0; i < 3; i++) {
-        colors_used[0][i] = 0;
-    }
+
     readDataLineInt(file, 2, 1, 3, colors_used);
-    for (int i = 0; i < nbR + 1; i++) {
-        for (int j = 0; j < 3; j++) {
-            cout << colors_used[i][j] << " ";
-        }
-        cout << endl;
-    }
+
     // Recuperation seuillage
     double colors_threshold[nbR + 1];
     colors_threshold[0] = 0;
     colors_threshold[nbR] = 1;
     readDataLineDouble(file, 3, 1, nbR, colors_threshold);
+
     // Seuillage de l'image
+
     int size[2] = {};
-    int** thresholded = thresholding(size, file, colors_threshold, nbR);
-    cout << endl
-         << "Size " << size[0] << " " << size[1] << " " << size[2] << endl
-         << endl;
 
-    for (int i = 0; i < size[2]; i++) {
-        for (int j = 0; j < size[0]; j++) {
-            cout << thresholded[i][j] << " ";
-        }
-        cout << endl;
+    getSize(file, size);
+
+    int** picture = new int*[size[0]];
+    for (int i = 0; i < size[1]; i++) {
+        picture[i] = new int[size[0]];
     }
+    thresholding(size, file, colors_threshold, nbR, picture);
 
-    cout << endl;
     // Filtrage
-    rec_filtering(size[0], size[2], 0, 0, thresholded);
-    cout << endl;
-
-    for (int i = 0; i < size[2]; i++) {
-        for (int j = 0; j < size[0]; j++) {
-            cout << i << "," << j << "," << thresholded[i][j] << "         ";
-        }
-
-        cout << endl;
-    }
+    rec_filtering(size[0], size[2], 0, 0, picture);
 
     // Renvoie de l'image
 
-    writeData("testWrite.ppm", 255, size[0], size[2], thresholded);
+    for (int i = 0; i < size[0]; i++) {
+        for (int j = 0; j < size[1]; j++) {
+            cout << picture[i][j] << "     ";
+        }
+        cout << endl;
+    }
+    writeData("testWrite.ppm", 255, size[0], size[2], picture);
     cout << "done" << endl;
 
-    return 0;
+    return (0);
 }
 
 void error_nbR(int nbR) { cout << "Invalid number of colors: " << nbR << endl; }
