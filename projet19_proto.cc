@@ -39,12 +39,25 @@ void readDataLineDouble(string file, uint16_t line, uint16_t startPosition,
         if (tmpData[i] == ' ') {
             if (lastWasSpace == false) {
                 data[dataM] = stod(tmpData2);
+                cout << data[dataM] << endl;
+                if (dataM > 0) {
+                    if (data[dataM] < data[dataM - 1]) {
+                        error_threshold(data[dataM]);
+                    }
+                }
+
                 tmpData2.clear();
                 dataM++;
                 lastWasSpace = true;
             }
         } else if (tmpData[i] == '\n') {
             data[dataM] = stod(tmpData2);
+            cout << data[dataM] << endl;
+            if (dataM > 0) {
+                if (data[dataM] < data[dataM - 1]) {
+                    error_threshold(data[dataM]);
+                }
+            }
             lastWasSpace = true;
             // BREAK
         } else {
@@ -74,6 +87,10 @@ void readDataLineInt(string file, uint16_t line, uint16_t startPosition,
             if (dataN < column - 1) {
                 if (lastWasSpace == false) {
                     data[dataM][dataN] = (unsigned int)stoi(tmpData2);
+                    if (data[dataM][dataN] > 255) {
+                        error_color(dataM);
+                        data[dataM][dataN] = 255;
+                    }
                     tmpData2.clear();
                     dataN++;
                     lastWasSpace = true;
@@ -83,6 +100,10 @@ void readDataLineInt(string file, uint16_t line, uint16_t startPosition,
             {
                 if (lastWasSpace == false) {
                     data[dataM][dataN] = (unsigned int)stoi(tmpData2);
+                    if (data[dataM][dataN] > 255) {
+                        error_color(dataM);
+                        data[dataM][dataN] = 255;
+                    }
                     tmpData2.clear();
                     dataN = 0;
                     dataM++;
@@ -91,6 +112,10 @@ void readDataLineInt(string file, uint16_t line, uint16_t startPosition,
             }
         } else if (tmpData[i] == '\n') {
             data[dataM][dataN] = (unsigned int)stoi(tmpData2);
+            if (data[dataM][dataN] > 255) {
+                error_color(dataM);
+                data[dataM][dataN] = 255;
+            }
         } else {
             lastWasSpace = false;
             tmpData2 = tmpData2 + tmpData[i];
@@ -110,7 +135,7 @@ void getSize(string file, int* size) {
     } while (data != "P3");
 
     getline(flux, data);
-    uint8_t j = 0;
+    uint8_t j = 1;
     data += ' ';
     bool lastWasSpace = false;
     for (uint8_t i = 0; i < data.size(); i++) {
@@ -122,7 +147,7 @@ void getSize(string file, int* size) {
             size[j] = stoi(dataTmp);
             lastWasSpace = true;
             dataTmp = {};
-            j++;
+            j--;
         }
     }
     flux.close();
@@ -145,12 +170,12 @@ void thresholding(int* size, string file, double colors_threshold[], uint8_t nbR
     int max = stoi(data);
     int R = 0, G = 0, B = 0;
 
-    int arrayTmp[size[0] * 3] = {};
+    int arrayTmp[size[1] * 3] = {};
     getline(flux, data);
 
     double tmpDouble = 0;
 
-    for (uint16_t i = 0; i < size[1]; i++) {
+    for (uint16_t i = 0; i < size[0]; i++) {
         uint8_t x = 0;
         data += ' ';
         dataTmp = "";
@@ -235,13 +260,13 @@ void writeData(string file, int max, uint16_t xSize, uint16_t ySize, int** pictu
     ofstream flux(file, ios::out | ios::trunc);
 
     flux << "P3" << endl;
-    flux << xSize << " " << ySize << endl;
+    flux << ySize << " " << xSize << endl;
     flux << max << endl;
     cout << endl;
 
-    for (int i = 0; i < ySize; i++) {
-        for (int j = 0; j < xSize; j++) {
-            if (j == xSize - 1) {
+    for (int i = 0; i < xSize; i++) {
+        for (int j = 0; j < ySize; j++) {
+            if (j == ySize - 1) {
                 flux << picture[i][j] << endl;
                 cout << picture[i][j] << endl;
             } else {
@@ -255,7 +280,7 @@ void writeData(string file, int max, uint16_t xSize, uint16_t ySize, int** pictu
 
 int main() {
 
-    string file = "tests/elementary/test2.txt";
+    string file = "tests/elementary/E03.txt";
     // Nombre Couleurs reduites
     unsigned int nbR = (unsigned int)stoi(readLine(file, 1));
     if (nbR < 2) {
@@ -264,7 +289,9 @@ int main() {
     // Couleurs reduites utilisees
     unsigned int colors_used[nbR + 1][(unsigned int)3];
 
-    readDataLineInt(file, 2, 1, 3, colors_used);
+    readDataLineInt(file, 2, 1, 3,
+                    colors_used); // PASSER NBR au lieu de juste lire une ligne
+                                  // ET RENVOYER LIGNE ACTUELLE
 
     // Recuperation seuillage
     double colors_threshold[nbR + 1];
@@ -279,15 +306,10 @@ int main() {
     getSize(file, size);
 
     int** picture = new int*[size[0]];
-    for (int i = 0; i < size[1]; i++) {
-        picture[i] = new int[size[0]];
+    for (int i = 0; i < size[0]; i++) {
+        picture[i] = new int[size[1]];
     }
     thresholding(size, file, colors_threshold, nbR, picture);
-
-    // Filtrage
-    rec_filtering(size[0], size[2], 0, 0, picture);
-
-    // Renvoie de l'image
 
     for (int i = 0; i < size[0]; i++) {
         for (int j = 0; j < size[1]; j++) {
@@ -295,7 +317,14 @@ int main() {
         }
         cout << endl;
     }
-    writeData("testWrite.ppm", 255, size[0], size[1], picture);
+
+    // Filtrage
+    rec_filtering(size[0], size[1], 0, 0, picture);
+
+    // Renvoie de l'image
+
+    writeData("testWrite.ppm", 255, size[0], size[1],
+              picture); // RAJOUTER LA TABLE DE COULEUR
     cout << "done" << endl;
 
     return (0);
