@@ -10,7 +10,7 @@ void error_color(int id);
 void error_threshold(double invalid_val);
 void error_nb_filter(int nb_filter);
 
-void filtering(int xPos, int yPos, int xSize, int ySize, int nbR, int** map);
+void filtering(int xSize, int ySize, int nbR, int** map);
 
 int main()
 {
@@ -49,7 +49,7 @@ int main()
 
 	int size[2] = {0,0};
 	cin >> size[1] >> size[0];
-	cout << size[0] << " " << size[1] << endl;
+	cout << size[1] << " " << size[0] << endl;
 
 	// ----------------------------------------------- //
 
@@ -99,7 +99,7 @@ int main()
 	// ----------------------------------------------- // Filtrage
 	
 	for (int p = 0; p < nbF; p++){
-		filtering(1,1,size[0], size[1], nbR, map); // Commencer en 0 0 ??!
+		filtering(size[0], size[1], nbR, map);
 	}
 
 	if (nbF > 0){
@@ -125,44 +125,52 @@ int main()
 		cout << endl;
 	}
 	
+	
 
 	return 0;
 }
 
-void filtering(int xPos, int yPos, int xSize, int ySize, int nbR, int** map){
+void filtering(int xSize, int ySize, int nbR, int** map){
 	int maxColorNb = 0;
 	int maxColorValue = 0;
 	int testColor[nbR + 1] = {0};
 
-	if (xPos == xSize - 1 || yPos == ySize - 1|| xPos == 0 || yPos == 0){
-		// Do nothing
-	}
-	else{
-		for (int i = -1; i <= 1; i++) {
-            for (int j = -1; j <= 1; j++) {
-                if (i == 0 && j == 0) {
+	int tmpMap[xSize][ySize] = {0};
 
-                } else if (i >= 0 && j >= 0){
-                    filtering(xPos + i, yPos + j, xSize, ySize, nbR, map);
-					testColor[map[i + xPos][j + yPos]] += 1;
-                }
-				else {
-					testColor[map[i + xPos][j + yPos]] += 1;
-				}
-            }
-        }
-
-		for (int i = 0; i <= nbR; i++){
-			if (testColor[i] > maxColorNb) {
-				maxColorNb = testColor[i];
-				maxColorValue = i;
+	for (int xPos = 1; xPos < xSize - 1; xPos++){
+		for (int yPos = 1; yPos < ySize - 1; yPos++){
+			
+			for (int i = 0; i < nbR + 1; i++){
+				testColor[i] = 0;
 			}
+
+			for (int i = -1; i <= 1; i++) {
+            	for (int j = -1; j <= 1; j++) {
+            	    if (i == 0 && j == 0) {
+                	} else {
+						testColor[map[i + xPos][j + yPos]] += 1;
+					}
+            	}
+        	}
+			maxColorNb = 0;
+			maxColorValue = 0;
+			for (int i = 0; i <= nbR; i++){
+				if (testColor[i] > maxColorNb) {
+					maxColorNb = testColor[i];
+					maxColorValue = i;
+				}
+			}
+        	if (maxColorNb >= 6) {
+            	tmpMap[xPos][yPos] = maxColorValue;
+        	} else {
+            	tmpMap[xPos][yPos] = 0;
+        	}
 		}
-        if (maxColorNb >= 6) {
-            map[xPos][yPos] = maxColorValue;
-        } else {
-            map[xPos][yPos] = 0;
-        }
+	}
+	for (int i = 0; i < xSize; i++){
+		for (int j = 0; j < ySize; j++){
+			map[i][j]= tmpMap[i][j];
+		}
 	}
 }
 
