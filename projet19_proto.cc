@@ -3,8 +3,6 @@
  */
 #include <iostream>
 #include <math.h>
-#include <string>
-#include <fstream>
 
 using namespace std;
 
@@ -17,9 +15,6 @@ void filtering(int xSize, int ySize, int nbR, int** map);
 
 int main()
 {
-	ofstream flux("map0.txt", ios::out | ios::trunc);
-
-
 	int nbR = 0;
 	cin >> nbR;
 	if (nbR < 2) {
@@ -65,7 +60,7 @@ int main()
 
 	// ----------------------------------------------- // Seuillage
 
-	int picture[size[0]][size[1]][3];
+	uint8_t picture[size[0]][size[1]][3];
 
 	// int map[size[0]][size[1]];
 	int** map = new int*[size[0]];
@@ -105,14 +100,6 @@ int main()
 
 		}
 	}
-
-	for (int i = 0; i < size[0]; i++){
-		for (int j = 0; j < size[1]; j++){
-			flux << map[i][j] << "  ";
-		}
-		flux << endl;
-	}
-
 	// ----------------------------------------------- // Filtrage
 	
 	for (int p = 0; p < nbF; p++){
@@ -141,9 +128,6 @@ int main()
 		}
 		cout << endl;
 	}
-	
-	
-
 	return 0;
 }
 
