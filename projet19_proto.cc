@@ -3,8 +3,7 @@
  */
 #include <iostream>
 #include <math.h>
-#include <string>
-#include <fstream>
+#include <cstdint>
 
 using namespace std;
 
@@ -13,12 +12,10 @@ void error_color(int id);
 void error_threshold(double invalid_val);
 void error_nb_filter(int nb_filter);
 
-void filtering(int xSize, int ySize, int nbR, int** map);
+void filtering(int xSize, int ySize, int nbR, short** map);
 
 int main()
 {
-	ofstream flux("map0.txt", ios::out | ios::trunc);
-
 	int nbR = 0;
 	cin >> nbR;
 	if (nbR < 2) {
@@ -26,7 +23,7 @@ int main()
 		return(1);
     }
  	// ---------------------------------------------- //
-	int colors_used[nbR + 1][3] = {0};
+	short colors_used[nbR + 1][3] = {0};
 	for (int i = 1; i < nbR + 1; i++){
 		for (int j = 0; j < 3; j++){
 			cin >> colors_used[i][j];
@@ -69,9 +66,9 @@ int main()
 
 	short picture[size[0]][size[1]][3];
 
-	int** map = new int*[size[0]];
+	short** map = new short*[size[0]];
    	for (int i = 0; i < size[0]; i++) {
-    	map[i] = new int[size[1]];
+    	map[i] = new short[size[1]];
     }
 
 	double tmpDouble;
@@ -85,9 +82,7 @@ int main()
 		for (int j = 0; j < size[1]; j++){
 			for (int k = 0; k < 3; k++){
 				cin >> picture[i][j][k];
-				flux << picture[i][j][k];
 			}
-			flux << " ";
 			R = picture[i][j][0];
 			G = picture[i][j][1];
     		B = picture[i][j][2];
@@ -105,9 +100,7 @@ int main()
 				}
 				k++;
 			}
-
 		}
-		flux << endl;
 	}
 	// ----------------------------------------------- // Filtrage
 	
@@ -140,7 +133,7 @@ int main()
 	return 0;
 }
 
-void filtering(int xSize, int ySize, int nbR, int** map){
+void filtering(int xSize, int ySize, int nbR, short** map){
 	int maxColorNb, maxColorValue = 0;
 	int testColor[nbR + 1] = {0};
 	int tmpMap[xSize][ySize] = {0};
