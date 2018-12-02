@@ -3,6 +3,8 @@
  */
 #include <iostream>
 #include <math.h>
+#include <string>
+#include <fstream>
 
 using namespace std;
 
@@ -15,6 +17,8 @@ void filtering(int xSize, int ySize, int nbR, int** map);
 
 int main()
 {
+	ofstream flux("map0.txt", ios::out | ios::trunc);
+
 	int nbR = 0;
 	cin >> nbR;
 	if (nbR < 2) {
@@ -26,6 +30,7 @@ int main()
 	for (int i = 1; i < nbR + 1; i++){
 		for (int j = 0; j < 3; j++){
 			cin >> colors_used[i][j];
+			if (colors_used[i][j] > 255 || colors_used[i][j] < 0) {error_color(i); return(1);}
 		}
 	}
 
@@ -35,11 +40,13 @@ int main()
     colors_threshold[nbR] = 1;
 	for (int i = 1; i < nbR; i++){
 		cin >> colors_threshold[i];
+		if (colors_threshold[i-1] >= colors_threshold[i]){error_threshold(colors_threshold[i]); return(1);}
 	}
 
 	// ----------------------------------------------- //
 	int nbF = 0;
 	cin >> nbF;
+	if (nbF < 0){error_nb_filter(nbF); return(1);}
 
 	// ----------------------------------------------- //
 	char tmpChar[2];
@@ -58,11 +65,10 @@ int main()
 	cin >> max;
 	cout << max << endl;
 
-	// ----------------------------------------------- // Seuillage
+	// ----------------------------------------------- //
 
-	uint8_t picture[size[0]][size[1]][3];
+	short picture[size[0]][size[1]][3];
 
-	// int map[size[0]][size[1]];
 	int** map = new int*[size[0]];
    	for (int i = 0; i < size[0]; i++) {
     	map[i] = new int[size[1]];
@@ -79,7 +85,9 @@ int main()
 		for (int j = 0; j < size[1]; j++){
 			for (int k = 0; k < 3; k++){
 				cin >> picture[i][j][k];
+				flux << picture[i][j][k];
 			}
+			flux << " ";
 			R = picture[i][j][0];
 			G = picture[i][j][1];
     		B = picture[i][j][2];
@@ -99,6 +107,7 @@ int main()
 			}
 
 		}
+		flux << endl;
 	}
 	// ----------------------------------------------- // Filtrage
 	
@@ -132,19 +141,14 @@ int main()
 }
 
 void filtering(int xSize, int ySize, int nbR, int** map){
-	int maxColorNb = 0;
-	int maxColorValue = 0;
+	int maxColorNb, maxColorValue = 0;
 	int testColor[nbR + 1] = {0};
-
 	int tmpMap[xSize][ySize] = {0};
-
 	for (int xPos = 1; xPos < xSize - 1; xPos++){
 		for (int yPos = 1; yPos < ySize - 1; yPos++){
-			
 			for (int i = 0; i < nbR + 1; i++){
 				testColor[i] = 0;
 			}
-
 			for (int i = -1; i <= 1; i++) {
             	for (int j = -1; j <= 1; j++) {
             	    if (i == 0 && j == 0) {
@@ -175,18 +179,15 @@ void filtering(int xSize, int ySize, int nbR, int** map){
 	}
 }
 
-void error_nbR(int nbR)
-{
+void error_nbR(int nbR){
 	cout << "Invalid number of colors: " << nbR << endl;
 }
 
-void error_color(int id)
-{
+void error_color(int id){
 	cout << "Invalid color value " << id << endl;
 }
 
-void error_threshold(double invalid_val)
-{
+void error_threshold(double invalid_val){
 	cout << "Invalid threshold value: " << invalid_val << endl;
 }
 
