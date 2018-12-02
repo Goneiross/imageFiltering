@@ -4,14 +4,11 @@
 
 First year EPFL project
 
-## ToDo list
+## How to use it
 
-~~[1] Fetch user given data~~
+Install imageMagick
+Then use :
 
-~~[2] Fetch picture data~~
-
-~~[3] Thresholding~~
-
-[4] Filtering
-
-[5] Writting back data
+$ ./projet19_proto<./tests/advanced/tree.txt>output.txt
+$ convert -compress none output.txt output.ppm
+$ display output.ppm
