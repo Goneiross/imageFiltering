@@ -3,6 +3,9 @@
  */
 #include <iostream>
 #include <math.h>
+#include <string>
+#include <fstream>
+
 using namespace std;
 
 void error_nbR(int nbR);
@@ -14,6 +17,9 @@ void filtering(int xSize, int ySize, int nbR, int** map);
 
 int main()
 {
+	ofstream flux("map0.txt", ios::out | ios::trunc);
+
+
 	int nbR = 0;
 	cin >> nbR;
 	if (nbR < 2) {
@@ -86,14 +92,25 @@ int main()
 			notTheEnd = true;
 			k = 1;
 			while (k <= nbR && notTheEnd){
-				if(tmpDouble < colors_threshold[k]){
+				if(tmpDouble >= colors_threshold[k-1] && tmpDouble < colors_threshold[k]){
 					map[i][j]=k;
+					notTheEnd = false;
+				}
+				else if(tmpDouble >= 1) {
+					map[i][j]=nbR;
 					notTheEnd = false;
 				}
 				k++;
 			}
 
 		}
+	}
+
+	for (int i = 0; i < size[0]; i++){
+		for (int j = 0; j < size[1]; j++){
+			flux << map[i][j] << "  ";
+		}
+		flux << endl;
 	}
 
 	// ----------------------------------------------- // Filtrage
