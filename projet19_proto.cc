@@ -94,7 +94,7 @@ int main() {
     } 
     writeData(size[0], size[1], colors_used, map);
     
-    // deletePointers(picture,map,colors_used,colors_threshold, size, nbR);
+    deletePointers(picture,map,colors_used,colors_threshold, size, nbR);
 
     return (0);
 }
