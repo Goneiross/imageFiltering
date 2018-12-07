@@ -17,6 +17,7 @@ void thresholding(int xSize, int ySize, int nbR, int max, double* colors_thresho
 void filtering(int xSize, int ySize, int nbR, short** map);
 void edge(int xSize, int ySize, short** map);
 void writeData(int xSize, int ySize, short** colors_used, short** map);
+void deletePointers(short*** picture,short** map, short** colors_used,double* colors_threshold, int size[2], int nbR);
 
 int main() {
     int nbR = 0;
@@ -77,23 +78,25 @@ int main() {
             picture[i][j] = new short[3];
         }
     }
-
+    
     short** map = new short*[size[0]];
     for (int i = 0; i < size[0]; i++) {
         map[i] = new short[size[1]];
     }
-    thresholding(size[0], size[1], nbR, max, colors_threshold, picture, map);
+    thresholding(size[0], size[1], nbR, max, colors_threshold, picture, map); //ATTENTION SEUIL MIN 
 
     for (int p = 0; p < nbF; p++) {
         filtering(size[0], size[1], nbR, map);
     }
-
+    
     if (nbF > 0) {
         edge(size[0], size[1], map);
-    }
-
+    } 
     writeData(size[0], size[1], colors_used, map);
-    return 0;
+    
+    // deletePointers(picture,map,colors_used,colors_threshold, size, nbR);
+
+    return (0);
 }
 
 void thresholding(int xSize, int ySize, int nbR, int max, double* colors_threshold,
@@ -161,8 +164,8 @@ void filtering(int xSize, int ySize, int nbR, short** map) {
             }
         }
     }
-    for (int i = 0; i < xSize; i++) {
-        for (int j = 0; j < ySize; j++) {
+    for (int i = 1; i < xSize - 1; i++) {
+        for (int j = 1; j < ySize - 1; j++) {
             map[i][j] = tmpMap[i][j];
         }
     }
@@ -185,10 +188,32 @@ void writeData(int xSize, int ySize, short** colors_used, short** map) {
             for (int k = 0; k < 3; k++) {
                 cout << colors_used[map[i][j]][k] << " ";
             }
-            cout << "    ";
         }
         cout << endl;
     }
+    cout << endl;
+}
+
+void deletePointers(short*** picture,short** map, short** colors_used,double* colors_threshold, int size[2], int nbR){
+    for (int i = 0; i < size[0]; i++) {
+        for (int j = 0; j < size[1]; j++){
+            delete [] picture[i][j];
+        }
+        delete [] picture [i];
+        delete [] map[i];
+    }
+    delete [] picture;
+    delete [] map;
+    picture = NULL;
+    map = NULL;
+
+    for (int i = 0; i < nbR + 1; i++) {
+        delete [] colors_used [i];
+    }
+    delete [] colors_used;
+    delete [] colors_threshold;
+    colors_used = NULL;
+    colors_threshold = NULL;
 }
 
 void error_nbR(int nbR) { cout << "Invalid number of colors: " << nbR << endl; }
