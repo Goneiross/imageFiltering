@@ -1,4 +1,4 @@
-/** \author PELLERIN Guillaume
+/** \author PELLERIN Guillaume 296935
  *  \date	dec 2018
  */
 #include <cstdint>
@@ -7,53 +7,46 @@
 
 using namespace std;
 
-void error_nbR(short nbR);
+void error_nbR(int nbR);
 void error_color(int id);
 void error_threshold(double invalid_val);
 void error_nb_filter(int nb_filter);
 short parseNbR();
 void parseColorsUsed(short** colorsUsed, short nbR);
-void parseColorsThreshold(double* colorsThreshold, int nbR);
+void parseThreshold(double* Threshold, int nbR);
 int parseNbF();
-void thresholding(int xSize, int ySize, short nbR, int max, double* colorsThreshold,
+void thresholding(int xSize, int ySize, short nbR, int max, double* Threshold,
                   short** map);
 void filtering(int xSize, int ySize, short nbR, short** map);
 void edge(int xSize, int ySize, short** map);
 void writeData(int xSize, int ySize, short** colorsUsed, short** map);
-void deletePointers(short** map, short** colorsUsed, double* colorsThreshold,
-                    int size[2], short nbR);
+void deletePointers(short** map, short** colorsUsed, double* Threshold, int size[2],
+                    short nbR);
 
 int main() {
     short nbR = parseNbR();
-
     short** colorsUsed = new short*[nbR + 1];
     for (int i = 0; i < nbR + 1; i++) {
         colorsUsed[i] = new short[3];
     }
     parseColorsUsed(colorsUsed, nbR);
-
-    double* colorsThreshold = new double[nbR + 1];
-    parseColorsThreshold(colorsThreshold, nbR);
-
+    double* Threshold = new double[nbR + 1];
+    parseThreshold(Threshold, nbR);
     int nbF = parseNbF();
-
     char tmpChar[2];
     cin >> tmpChar;
     cout << tmpChar << endl;
-
     int size[2] = {0, 0};
     cin >> size[1] >> size[0];
     cout << size[1] << " " << size[0] << endl;
-
     int max = 0;
     cin >> max;
     cout << max << endl;
-
     short** map = new short*[size[0]];
     for (int i = 0; i < size[0]; i++) {
         map[i] = new short[size[1]];
     }
-    thresholding(size[0], size[1], nbR, max, colorsThreshold, map);
+    thresholding(size[0], size[1], nbR, max, Threshold, map);
     for (int p = 0; p < nbF; p++) {
         filtering(size[0], size[1], nbR, map);
     }
@@ -61,7 +54,7 @@ int main() {
         edge(size[0], size[1], map);
     }
     writeData(size[0], size[1], colorsUsed, map);
-    deletePointers(map, colorsUsed, colorsThreshold, size, nbR);
+    deletePointers(map, colorsUsed, Threshold, size, nbR);
     return (0);
 }
 
@@ -87,13 +80,13 @@ void parseColorsUsed(short** colorsUsed, short nbR) {
     }
 }
 
-void parseColorsThreshold(double* colorsThreshold, int nbR) {
-    colorsThreshold[0] = 0;
-    colorsThreshold[nbR] = 1;
+void parseThreshold(double* Threshold, int nbR) {
+    Threshold[0] = 0;
+    Threshold[nbR] = 1;
     for (int i = 1; i < nbR; i++) {
-        cin >> colorsThreshold[i];
-        if (colorsThreshold[i - 1] >= colorsThreshold[i]) {
-            error_threshold(colorsThreshold[i]);
+        cin >> Threshold[i];
+        if (Threshold[i - 1] >= Threshold[i]) {
+            error_threshold(Threshold[i]);
             exit(0);
         }
     }
@@ -109,7 +102,7 @@ int parseNbF() {
     return (nbF);
 }
 
-void thresholding(int xSize, int ySize, short nbR, int max, double* colorsThreshold,
+void thresholding(int xSize, int ySize, short nbR, int max, double* Threshold,
                   short** map) {
     double tmpDouble = 0;
     int R, G, B = 0;
@@ -125,8 +118,7 @@ void thresholding(int xSize, int ySize, short nbR, int max, double* colorsThresh
             notTheEnd = true;
             k = 1;
             while (k <= nbR && notTheEnd) {
-                if (tmpDouble >= colorsThreshold[k - 1] &&
-                    tmpDouble < colorsThreshold[k]) {
+                if (tmpDouble >= Threshold[k - 1] && tmpDouble < Threshold[k]) {
                     map[i][j] = k;
                     notTheEnd = false;
                 } else if (tmpDouble >= 1) {
@@ -201,8 +193,8 @@ void writeData(int xSize, int ySize, short** colorsUsed, short** map) {
     cout << endl;
 }
 
-void deletePointers(short** map, short** colorsUsed, double* colorsThreshold,
-                    int size[2], short nbR) {
+void deletePointers(short** map, short** colorsUsed, double* Threshold, int size[2],
+                    short nbR) {
     for (int i = 0; i < size[0]; i++) {
         delete[] map[i];
     }
@@ -213,14 +205,16 @@ void deletePointers(short** map, short** colorsUsed, double* colorsThreshold,
         delete[] colorsUsed[i];
     }
     delete[] colorsUsed;
-    delete[] colorsThreshold;
+    delete[] Threshold;
     colorsUsed = NULL;
-    colorsThreshold = NULL;
+    Threshold = NULL;
 }
 
-void error_nbR(short nbR) { cout << "Invalid number of colors: " << nbR << endl; }
+void error_nbR(int nbR) { 
+    cout << "Invalid number of colors: " << nbR << endl; }
 
-void error_color(int id) { cout << "Invalid color value " << id << endl; }
+void error_color(int id) { 
+    cout << "Invalid color value " << id << endl; }
 
 void error_threshold(double invalid_val) {
     cout << "Invalid threshold value: " << invalid_val << endl;
