@@ -1,6 +1,3 @@
-/** \author PELLERIN Guillaume 296935
- *  \date	dec 2018
- */
 #include <cstdint>
 #include <iostream>
 #include <math.h>
