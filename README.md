@@ -2,7 +2,9 @@
 
 ## Description
 
-First year EPFL project
+First year EPFL project.
+
+The goal of Coloreduce is to reduce the number of colors in a picture, depending on the user inputs.
 
 ## How to use it
 
